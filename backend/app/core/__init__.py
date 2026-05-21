@@ -1,0 +1,1 @@
+# Initialize core configuration package
