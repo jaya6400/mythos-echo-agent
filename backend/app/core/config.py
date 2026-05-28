@@ -1,26 +1,17 @@
 import os
 from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from dotenv import load_dotenv
+
+# Force load the .env parameters into the system runtime environment
+load_dotenv()
 
 class Settings(BaseSettings):
-    # Configure Pydantic to read from a local .env file in the workspace
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        extra="ignore"
-    )
-
-    # General API Configuration
-    PROJECT_NAME: str = "Mythos Echo Agent API"
-    API_V1_STR: str = "/api/v1"
-    
-    # Elasticsearch configurations (Elastic MCP Gateway connection)
-    ELASTIC_URL: str = "http://localhost:9200"
-    ELASTIC_API_KEY: Optional[str] = None
-    
-    # Google Cloud & Gemini configurations (Section 7B compliant)
-    GOOGLE_CLOUD_PROJECT: Optional[str] = None
-    GEMINI_API_KEY: Optional[str] = None
+    PROJECT_NAME: str = "Mythos Echo Agent"
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+    ELASTIC_URL: str = os.getenv("ELASTIC_URL", "")
+    ELASTIC_API_KEY: str = os.getenv("ELASTIC_API_KEY", "")
+    GOOGLE_CLOUD_PROJECT: Optional[str] = os.getenv("GOOGLE_CLOUD_PROJECT")
 
     @property
     def has_elastic_credentials(self) -> bool:

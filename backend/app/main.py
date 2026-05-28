@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.core.config import settings
+from core.config import settings
+from endpoints import mythology
 
 # Initialize FastAPI application
 app = FastAPI(
@@ -12,11 +13,14 @@ app = FastAPI(
 # Set up CORS middleware to allow communication from Next.js frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Adjust in production to allow only specific origins (e.g., frontend URL)
+    allow_origins=[settings.FRONTEND_URL] if hasattr(settings, "FRONTEND_URL") else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include Routers
+app.include_router(mythology.router, prefix="/api/v1/mythology", tags=["mythology"])
 
 @app.get("/")
 def read_root():
