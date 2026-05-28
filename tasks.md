@@ -17,14 +17,12 @@ This workspace outlines the development tasks and empty file structures for the 
 ---
 
 ## 2. Backend API Orchestration Layers (FastAPI & Elastic MCP Gateway)
-- [ ] `backend/requirements.txt` - Dependency definitions (FastAPI, uvicorn, Elastic MCP SDKs, Google Cloud libraries).
-- [ ] `backend/app/__init__.py` - Application package initialization.
-- [ ] `backend/app/main.py` - FastAPI app initialization, middleware, routes registering.
-- [ ] `backend/app/api/__init__.py` - API endpoints configuration.
-- [ ] `backend/app/api/endpoints/mythology.py` - CRUD and processing endpoints for multilingual mythology content and creator assets.
-- [ ] `backend/app/services/__init__.py` - External services connectors initialization.
-- [ ] `backend/app/services/elastic_mcp.py` - Connector client to the Elastic MCP Gateway utilizing authorized SDK endpoints.
-- [ ] `backend/app/core/config.py` - Application environment settings, Google Cloud AI and Elastic connection parameters.
+- [x] `backend/requirements.txt` - Dependency definitions (FastAPI, uvicorn, elasticsearch, google-genai, python-dotenv).
+- [x] `backend/app/main.py` - FastAPI app initialization, CORS middleware, and router registration.
+- [x] `backend/app/endpoints/mythology.py` - Core POST orchestrate content generation endpoint.
+- [x] `backend/app/services/elastic_mcp.py` - Asynchronous Elastic Search querying connector with fallback logic.
+- [x] `backend/app/core/config.py` - Environment-based configuration loader (loads credentials from `.env` or system environment).
+- [x] `backend/scripts/test_integration.py` - End-to-end integration test of the FastAPI endpoint.
 
 ---
 
@@ -36,3 +34,10 @@ This workspace outlines the development tasks and empty file structures for the 
 - [x] `frontend/src/components/Sidebar.tsx` - Sidebar component displaying multilingual mythology content and creator assets hierarchy, connection statuses, and navigation.
 - [x] `frontend/src/components/DashboardContainer.tsx` - Parent layout linking the sidebar and main mythology content view.
 - [x] `frontend/src/styles/globals.css` - Global styling configurations.
+
+---
+
+## 4. Pending System Integrations & Fixes
+- [ ] **Ingest Folklore Data**: Create the `mythology-dataset-en` index on Elasticsearch and populate it with folklore data to resolve the `NotFoundError (404)` on `/api/v1/mythology/orchestrate`.
+- [ ] **Run Data Cleaning**: Build/execute python cleaning scripts to clean incoming multilingual raw records before pushing them into the Elastic cluster.
+
