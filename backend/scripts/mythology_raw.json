@@ -1,0 +1,80 @@
+[
+  {
+    "DeityName": "Tho\u0308r",
+    "pantheon_group": "Norse",
+    "powers": "lightning, strength, storm, weather",
+    "desc": "<p>The hammer-wielding god of thunder, storms, and strength. Wields the mighty hammer Mjölnir.</p>",
+    "translations": {
+      "hi": {
+        "name": "थोर",
+        "description": "महान हथौड़ा म्योलनिर धारण करने वाला गड़गड़ाहट और तूफान का देवता।"
+      },
+      "ta": {
+        "name": "தோர்"
+      }
+    },
+    "metadata": {
+      "creator_notes": "Ideal for epic heroic narratives and action-packed storytelling."
+    }
+  },
+  {
+    "DeityName": "Zeus",
+    "pantheon_group": "Greek",
+    "powers": "thunder, sky, law, order, justice",
+    "desc": "<p>The king of Mount Olympus and ruler of the sky, weather, thunder, and justice.</p>",
+    "translations": {
+      "hi": {
+        "name": "ज्यूस",
+        "description": "माउंट ओलंपस का राजा और आकाश, बिजली तथा न्याय का शासक।"
+      }
+    },
+    "metadata": {
+      "creator_notes": "Perfect for political drama, leadership, or authoritative characters."
+    }
+  },
+  {
+    "DeityName": "Shiva",
+    "pantheon_group": "Hindu",
+    "powers": "destruction, asceticism, yoga, meditation",
+    "desc": "<p>The supreme destroyer and transformer within the Trimurti. Master of cosmic dance and yoga.</p>",
+    "translations": {
+      "hi": {
+        "name": "शिव",
+        "description": "त्रिदेवों में विनाशक और परिवर्तनकारी। योग और साधना के स्वामी।"
+      }
+    },
+    "metadata": {
+      "creator_notes": "Suited for stories involving transformation, cosmic balance, and mindfulness."
+    }
+  },
+  {
+    "DeityName": "Vayu",
+    "pantheon_group": "Hindu",
+    "powers": "wind, breath, speed, life-force",
+    "desc": "<p>The god of the wind and the messenger of the gods. Known for swift speed and infinite strength.</p>",
+    "translations": {
+      "hi": {
+        "name": "वायु",
+        "description": "पवन देव और देवताओं के संदेशवाहक। अत्यंत तीव्र गति के लिए जाने जाते हैं।"
+      }
+    },
+    "metadata": {
+      "creator_notes": "Excellent for high-speed, dynamic character dynamics or swift messengers."
+    }
+  },
+  {
+    "DeityName": "Ra",
+    "pantheon_group": "Egyptian",
+    "powers": "sun, warmth, creation, light",
+    "desc": "<p>The ancient Egyptian deity of the sun, represented with the head of a falcon and a sun disk.</p>",
+    "translations": {
+      "hi": {
+        "name": "रा",
+        "description": "प्राचीन मिस्र का सूर्य देव, जिसका सिर बाज का और ऊपर सूर्य चक्र है।"
+      }
+    },
+    "metadata": {
+      "creator_notes": "Suited for solar themes, creation myths, and grand celestial scale narratives."
+    }
+  }
+]

@@ -1,8 +1,12 @@
 import json
+import logging
 from google import genai
 from google.genai import types
 from pydantic import BaseModel
 from services.elastic_mcp import query_elastic_mcp_context
+ 
+logger = logging.getLogger("uvicorn.error")
+logger.setLevel(logging.INFO)
 
 class ContentPlanOutput(BaseModel):
     thought_process_step: str
@@ -16,6 +20,7 @@ async def run_orchestration_pipeline(payload_dict: dict) -> dict:
         platform_target = payload_dict.get("platform", "YouTube")
         
         # 1. Gather historical folklore context (Falls back safely if index is missing)
+        logger.info(f"Starting orchestration pipeline for: '{user_query}'")
         context_documents = await query_elastic_mcp_context(query=user_query, lang=lang_target)
         
         # 2. Fire unified client worker 
@@ -32,6 +37,7 @@ async def run_orchestration_pipeline(payload_dict: dict) -> dict:
             f"Retrieved Elastic Context:\n{json.dumps(context_documents)}"
         )
         
+        logger.info(f"Invoking Gemini model (3.5-flash) for {platform_target} synthesis...")
         # Switched to the modern gemini-3.5-flash model to bypass the 429 quota exhaustion block
         response = client.models.generate_content(
             model='gemini-3.5-flash',
@@ -44,9 +50,11 @@ async def run_orchestration_pipeline(payload_dict: dict) -> dict:
             ),
         )
         
+        logger.info("Successfully received synthesis from Gemini.")
         return json.loads(response.text)
         
     except Exception as e:
+        logger.error(f"Orchestration pipeline failed: {str(e)}")
         return {
             "thought_process_step": f"Pipeline exception details: {str(e)}",
             "script_segments": [],

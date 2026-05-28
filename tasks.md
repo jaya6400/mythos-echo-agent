@@ -38,6 +38,5 @@ This workspace outlines the development tasks and empty file structures for the 
 ---
 
 ## 4. Pending System Integrations & Fixes
-- [ ] **Ingest Folklore Data**: Create the `mythology-dataset-en` index on Elasticsearch and populate it with folklore data to resolve the `NotFoundError (404)` on `/api/v1/mythology/orchestrate`.
-- [ ] **Run Data Cleaning**: Build/execute python cleaning scripts to clean incoming multilingual raw records before pushing them into the Elastic cluster.
-
+- [x] **Ingest Folklore Data**: Create the `mythology-dataset-en` index on Elasticsearch and populate it with folklore data to resolve the `NotFoundError (404)` on `/api/v1/mythology/orchestrate`.
+- [x] **Run Data Cleaning**: Build/execute python cleaning scripts to clean incoming multilingual raw records before pushing them into the Elastic cluster.

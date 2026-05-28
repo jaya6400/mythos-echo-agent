@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     ELASTIC_URL: str = os.getenv("ELASTIC_URL", "")
     ELASTIC_API_KEY: str = os.getenv("ELASTIC_API_KEY", "")
     GOOGLE_CLOUD_PROJECT: Optional[str] = os.getenv("GOOGLE_CLOUD_PROJECT")
+    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
     @property
     def has_elastic_credentials(self) -> bool:
