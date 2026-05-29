@@ -37,6 +37,14 @@ This workspace outlines the development tasks and empty file structures for the 
 
 ---
 
-## 4. Pending System Integrations & Fixes
+## 4. System Integrations & Fixes
 - [x] **Ingest Folklore Data**: Create the `mythology-dataset-en` index on Elasticsearch and populate it with folklore data to resolve the `NotFoundError (404)` on `/api/v1/mythology/orchestrate`.
 - [x] **Run Data Cleaning**: Build/execute python cleaning scripts to clean incoming multilingual raw records before pushing them into the Elastic cluster.
+
+## 5. Google Cloud Agent Builder & ML Extension (Hackathon Compliance)
+- [x] Enable ELSER Semantic ML Model inside Elasticsearch for advanced folklore vector search.
+- [x] Expose the Native Elastic Serverless MCP Endpoint from the Kibana Agent Builder UI.
+- [x] Provision a Gemini Agent inside Google Cloud Agent Builder console.
+- [x] Connect the Elastic MCP server as a native tool within the Google Agent Builder Canvas.
+- [x] Refactor Frontend Dashboard to POST inputs directly to the Google Cloud Agent endpoint.
+
