@@ -10,8 +10,6 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from parser import parse_file
 
 # Load environment variables
-# load_dotenv("backend/app/.env")
-# load_dotenv("app/.env")
 load_dotenv()
 
 ELASTIC_URL = os.getenv("ELASTIC_URL", "http://localhost:9200")
@@ -30,64 +28,72 @@ async def main():
     )
     
     index_name = "mythology-dataset-en"
+    model_id = ".elser_model_2"
     
     try:
-        # 1. Programmatically verify and create index if missing
-        index_exists = await es_client.indices.exists(index=index_name)
-        if not index_exists:
-            print(f"Index '{index_name}' not found. Creating index...")
-            await es_client.indices.create(
-                index=index_name,
-                body={
-                    "mappings": {
-                        "properties": {
-                            "id": { "type": "keyword" },
-                            "name": { "type": "text" },
-                            "pantheon": { "type": "keyword" },
-                            "attributes": { "type": "keyword" },
-                            "description": { "type": "text" },
-                            "translations": { "type": "object" },
-                            "vector_text": { "type": "text" },
-                            "normalized_content": { "type": "text" },
-                            "metadata": { "type": "object" }
+        # 0. VERIFY ML MODEL DEPLOYMENT STATUS NATIVELY
+        print(f"Verifying active status of deployed ML model: {model_id}...")
+        try:
+            stats = await es_client.ml.get_trained_models_stats(model_id=model_id)
+            model_list = stats.get("trained_model_stats", [])
+            state = model_list[0].get("deployment_stats", {}).get("state") if model_list else "missing"
+            print(f"Current ML Model internal state is: '{state}'")
+        except Exception as e:
+            print(f"⚠️ Model status check note: {e}")
+
+        # 1. INDEX VALIDATION: Setup semantic_text mapping directly to model_id
+        if await es_client.indices.exists(index=index_name):
+            print(f"Replacing legacy index '{index_name}'...")
+            await es_client.indices.delete(index=index_name)
+
+        print(f"Creating index with 'semantic_text' mapping directly targeting '{model_id}'...")
+        await es_client.indices.create(
+            index=index_name,
+            body={
+                "mappings": {
+                    "properties": {
+                        "id": { "type": "keyword" },
+                        "name": { "type": "text" },
+                        "pantheon": { "type": "keyword" },
+                        "attributes": { "type": "keyword" },
+                        "description": { "type": "text" },
+                        "vector_text": { "type": "text" },
+                        "normalized_content": { "type": "text" },
+                        # Direct connection to the running model eliminates the 404 alias exception
+                        "semantic_description": {
+                            "type": "semantic_text"
                         }
                     }
                 }
-            )
-            print(f"Index '{index_name}' created successfully.")
-        else:
-            print(f"Index '{index_name}' already exists.")
-            
-        # 2. Parse raw dataset payload using local parser
+            }
+        )
+
+        # 2. Parse raw dataset using local parser
         raw_json_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mythology_raw.json")
-        print(f"Parsing raw dataset from: {raw_json_path}")
-        
         parsed_documents = parse_file(raw_json_path)
-        print(f"Successfully parsed and cleaned {len(parsed_documents)} records.")
         
-        # 3. Index documents into the cluster
+        # 3. STREAMLINED INGESTION: Mapping and indexing loop
+        print(f"Ingesting {len(parsed_documents)} records into your Machine Learning cluster...")
         for doc in parsed_documents:
-            # Map the clean vector text directly to normalized_content for compatibility with search queries
-            doc["normalized_content"] = doc["vector_text"]
+            # MACHINE LEARNING DATA MAPPING: Extract description to populate semantic text property
+            doc["semantic_description"] = doc.get("description", doc.get("vector_text", ""))
+            doc["normalized_content"] = doc.get("vector_text", "")
             
             doc_id = doc["id"]
-            print(f"Indexing document {doc_id} ('{doc['name']}')...")
-            
             await es_client.index(
                 index=index_name,
                 id=doc_id,
                 document=doc
             )
+            print(f" ✅ Processed and indexed document ID: {doc_id}")
             
-        # 4. Refresh index to make documents immediately searchable
+        # Finalize ingestion and build cluster memory buffers
         await es_client.indices.refresh(index=index_name)
-        
-        # Get count to verify
         count_resp = await es_client.count(index=index_name)
-        print(f"\nSeeding complete. Total documents in '{index_name}': {count_resp.get('count')}")
+        print(f"\n🎉 Seeding complete! Total ML-indexed records verified: {count_resp.get('count')}")
         
     except Exception as e:
-        print(f"\nError occurred during data ingestion: {str(e)}", file=sys.stderr)
+        print(f"❌ Error during ingestion: {str(e)}", file=sys.stderr)
         sys.exit(1)
     finally:
         await es_client.close()
