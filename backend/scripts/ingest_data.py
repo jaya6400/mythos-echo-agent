@@ -55,7 +55,7 @@ async def main():
                         "id": { "type": "keyword" },
                         "name": { "type": "text" },
                         "pantheon": { "type": "keyword" },
-                        "attributes": { "type": "keyword" },
+                        "attributes": { "type": "text" },
                         "description": { "type": "text" },
                         "vector_text": { "type": "text" },
                         "normalized_content": { "type": "text" },

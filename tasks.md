@@ -9,10 +9,10 @@ This workspace outlines the development tasks and empty file structures for the 
 ---
 
 ## 1. Python Data Cleaning Scripts
-- [ ] `backend/scripts/__init__.py` - Python package initialization.
-- [ ] `backend/scripts/cleaner.py` - Core logic for filtering and normalizing raw multilingual mythology content and creator assets.
-- [ ] `backend/scripts/parser.py` - Parser to transform diverse raw multilingual mythology content formats into standardized JSON.
-- [ ] `backend/scripts/test_cleaner.py` - Unit tests for verification of data cleaning logic.
+- [x] `backend/scripts/__init__.py` - Python package initialization.
+- [x] `backend/scripts/cleaner.py` - Core logic for filtering and normalizing raw multilingual mythology content and creator assets.
+- [x] `backend/scripts/parser.py` - Parser to transform diverse raw multilingual mythology content formats into standardized JSON.
+- [x] `backend/scripts/test_cleaner.py` - Unit tests for verification of data cleaning logic.
 
 ---
 
@@ -46,5 +46,6 @@ This workspace outlines the development tasks and empty file structures for the 
 - [x] Expose the Native Elastic Serverless MCP Endpoint from the Kibana Agent Builder UI.
 - [x] Provision a Gemini Agent inside Google Cloud Agent Builder console.
 - [x] Connect the Elastic MCP server as a native tool within the Google Agent Builder Canvas.
-- [x] Refactor Frontend Dashboard to POST inputs directly to the Google Cloud Agent endpoint.
+- [x] Refactor Frontend Dashboard to support both '/orchestrate' and stateless '/mcp-bridge' agent simulation modes.
+
 
