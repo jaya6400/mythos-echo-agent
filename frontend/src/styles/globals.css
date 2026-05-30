@@ -3,35 +3,101 @@
 @tailwind utilities;
 
 :root {
-  --background: #030712; /* Deep grey-black slate */
-  --foreground: #f3f4f6; /* White slate */
-  --border: rgba(255, 255, 255, 0.08);
-  --card: rgba(17, 24, 39, 0.7); /* Translucent dark slate */
+  --background: #020617;
+  --foreground: #f8fafc;
+  --border: rgba(45, 212, 191, 0.22);
+  --card: rgba(15, 23, 42, 0.76);
 }
 
 body {
   color: var(--foreground);
-  background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #030712 70%); /* Deep indigo radial gradient */
+  background:
+    radial-gradient(circle at top left, rgba(20, 184, 166, 0.18), transparent 34rem),
+    radial-gradient(circle at bottom right, rgba(59, 130, 246, 0.14), transparent 30rem),
+    #020617;
   min-height: 100vh;
   overflow-x: hidden;
-  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  @apply font-sans antialiased;
 }
 
-/* Custom Scrollbar Styles for Glassmorphic Sidebar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
+@layer components {
+  .studio-container {
+    @apply relative min-h-screen overflow-hidden text-slate-50;
+    background:
+      linear-gradient(135deg, rgba(2, 6, 23, 1), rgba(8, 47, 73, 0.88) 52%, rgba(6, 78, 59, 0.82)),
+      #020617;
+  }
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
+  .studio-shell {
+    @apply relative z-10 mx-auto flex max-w-7xl flex-col gap-8 p-4 md:p-8;
+  }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-}
+  .studio-header {
+    @apply flex items-center gap-4 border-b border-teal-300/15 bg-cyan-950/30 p-6 backdrop-blur-sm;
+  }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  .studio-panel {
+    @apply flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border border-teal-300/20 bg-slate-950/70 shadow-2xl backdrop-blur-md;
+  }
+
+  .creator-label {
+    @apply text-[11px] font-semibold uppercase tracking-wider text-white;
+  }
+
+  .empty-state-text {
+    @apply text-sm font-medium text-emerald-400;
+  }
+
+  .glowing-navbar-accent {
+    @apply relative inline-flex items-center pb-2 text-white;
+  }
+
+  .glowing-navbar-accent::after {
+    content: "";
+    @apply absolute bottom-0 left-0 h-[2px] w-full rounded-full bg-gradient-to-r from-teal-300 via-blue-400 to-transparent shadow-neon-teal;
+  }
+
+  .creator-field {
+    @apply space-y-1.5;
+  }
+
+  .creator-select-button {
+    @apply flex w-full items-center justify-between rounded-xl border border-teal-300/45 bg-slate-950/90 px-3.5 py-3 text-left text-sm text-slate-50 shadow-neon-teal outline-none transition-colors hover:border-teal-200 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .creator-select-menu {
+    @apply absolute left-0 right-0 top-[calc(100%+0.5rem)] z-40 overflow-hidden rounded-xl border border-teal-300/35 bg-slate-950/95 p-1.5 shadow-2xl shadow-cyan-950/60 backdrop-blur-xl;
+  }
+
+  .creator-select-option {
+    @apply relative flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm text-slate-200 outline-none transition-colors hover:bg-teal-400/10 hover:text-white;
+  }
+
+  .creator-input {
+    @apply w-full rounded-xl border border-teal-300/25 bg-slate-950/90 py-3.5 pl-4 pr-14 text-sm text-slate-100 placeholder-blue-400/80 outline-none transition-colors focus:border-teal-300 focus:ring-2 focus:ring-teal-300/25 disabled:opacity-50;
+  }
+
+  .creator-submit {
+    @apply absolute right-2 flex items-center justify-center rounded-lg bg-teal-400 p-2 text-slate-950 shadow-neon-teal transition-colors hover:bg-teal-300 disabled:bg-slate-900 disabled:text-blue-400/50;
+  }
+
+  .media-card {
+    @apply overflow-hidden rounded-lg border border-teal-300/20 bg-slate-950/55 backdrop-blur-xl transition-colors hover:border-teal-200/45 hover:bg-cyan-950/35;
+  }
+
+  .media-card__hook {
+    @apply text-lg font-bold italic leading-tight tracking-normal text-blue-300;
+  }
+
+  .media-card__tag-pill {
+    @apply rounded-full border border-teal-300/25 bg-teal-400/10 px-3 py-1 text-[10px] font-mono text-teal-200 transition-colors hover:border-teal-200 hover:text-white;
+  }
+
+  .sidebar-toggle {
+    @apply fixed right-4 top-4 z-[60] inline-flex items-center gap-2 rounded-full border border-teal-200/40 bg-slate-950/80 px-4 py-3 text-sm font-semibold text-white shadow-neon-teal backdrop-blur-xl;
+  }
+
+  .sidebar-drawer {
+    @apply fixed right-0 top-0 z-50 flex h-full w-full max-w-sm flex-col border-l border-teal-300/20 bg-slate-950/95 shadow-2xl shadow-cyan-950/70 backdrop-blur-2xl;
+  }
 }
