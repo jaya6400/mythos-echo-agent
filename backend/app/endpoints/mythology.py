@@ -50,11 +50,30 @@ async def mcp_bridge(request: Request):
         # Capture incoming payload from Agent Studio
         body = await request.json()
         
+        # MCP Protocol Adapter: Detect if this is a simple JSON request from the frontend
+        # standard MCP servers expect JSON-RPC 2.0. We wrap simple payloads to enable 
+        # easy testing from the UI without full client-side protocol implementation.
+        if isinstance(body, dict) and "jsonrpc" not in body:
+            user_prompt = body.get("user_prompt", "")
+            
+            body = {
+                "jsonrpc": "2.0",
+                "id": "frontend-simulation-id",
+                "method": "tools/call",
+                "params": {
+                    "name": "mythology_folklore_search",
+                    "arguments": {
+                        "nlQuery": user_prompt
+                    }
+                }
+            }
+
         # Inject the required secure cloud credentials
         headers = {
             "Authorization": f"ApiKey {ELASTIC_API_KEY}",
             "Content-Type": "application/json",
-            "Accept": "application/json"
+            "Accept": "application/json",
+            "bypass-tunnel-reminder": "true"
         }
         
         # Forward directly to Elastic Serverless on GCP

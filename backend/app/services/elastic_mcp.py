@@ -28,8 +28,9 @@ async def query_elastic_mcp_context(query: str, lang: str) -> list[dict]:
             index=index_target,
             body={
                 "query": {
-                    "match": {
-                        "normalized_content": query
+                    "semantic": {
+                        "field": "semantic_description",
+                        "query": query
                     }
                 },
                 "size": 3
