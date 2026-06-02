@@ -109,6 +109,7 @@ export default function QueryForm({
   const languageOptions = [
     { value: "en", label: "English creator research" },
     { value: "hi", label: "Hindi creator research" },
+    { value: "ta", label: "Tamil creator research" },
   ];
 
   const platformOptions = [

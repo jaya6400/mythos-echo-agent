@@ -12,6 +12,7 @@ class ContentPlanOutput(BaseModel):
     thought_process_step: str
     script_segments: list[str]
     seo_metadata_tags: list[str]
+    entity_names: list[str] = []  # Extract entity names from context for backend translation lookup
 
 async def run_orchestration_pipeline(payload_dict: dict) -> dict:
     try:
@@ -40,7 +41,8 @@ async def run_orchestration_pipeline(payload_dict: dict) -> dict:
         system_instruction = (
             f"You are an expert cultural content strategist dashboard. "
             f"Use the provided folklore context data to plan script assets in {language_instruction}. "
-            f"IMPORTANT: The fields 'thought_process_step' and 'script_segments' MUST be written in {language_instruction}.{exclusivity_instruction}"
+            f"IMPORTANT: The fields 'thought_process_step' and 'script_segments' MUST be written in {language_instruction}.{exclusivity_instruction}\n"
+            f"ALSO: Extract any entity names (deity/character names) from the retrieved context and list them in the 'entity_names' field for backend translation lookup."
         )
         
         user_content = (
