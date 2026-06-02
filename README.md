@@ -4,6 +4,10 @@ MythosEcho is a multilingual mythology content generator for creator workflows. 
 
 The app currently supports English and Hindi creator output. Tamil is wired through the UI/backend, but Tamil content requires `translations.ta.*` data to be ingested into Elastic before it can produce meaningful Tamil results.
 
+### Quick Links
+- Deployed Website: 
+- Demo Video: 
+
 ![Architecture Diagram](docs/diagram.jpeg)
 
 ## Current Capabilities
@@ -23,12 +27,6 @@ The app currently supports English and Hindi creator output. Tamil is wired thro
 - **Single Multilingual Index Strategy:** `mythology-dataset-en` stores all language variants inline
 
 ## Getting Started
-
-### Quick Links
-
-- **For Tamil Setup:** See [docs/TAMIL_SETUP.md](docs/TAMIL_SETUP.md)
-- **Architecture Diagram Image:** ![Architecture Diagram](docs/diagram.jpeg)
-- **For Local Development:** Follow [Local Development](#local-development) below
 
 ### Backend
 
@@ -71,12 +69,6 @@ Build check:
 
 ```bash
 npm run build
-```
-
-On Windows PowerShell, if `npm.ps1` is blocked by execution policy, use:
-
-```powershell
-npm.cmd run build
 ```
 
 ## Repository Layout
@@ -250,33 +242,9 @@ The main seed dataset is located at:
 backend/scripts/mythology_raw.json
 ```
 
-A new extended dataset with Tamil translations is available:
+### Adding New Languages
 
-```text
-backend/scripts/mythology_raw1.json
-```
-
-### Using mythology_raw1.json with Tamil Translations
-
-To use `mythology_raw1.json` (which includes Tamil translations):
-
-**Option 1: Rename the file (simplest)**
-```bash
-cd backend/scripts
-mv mythology_raw.json mythology_raw.json.bak   # backup original
-mv mythology_raw1.json mythology_raw.json      # use the new dataset
-```
-
-**Option 2: Modify ingest_data.py to specify the file**
-
-Edit `backend/scripts/ingest_data.py` around line 35:
-```python
-# Change this:
-raw_json_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mythology_raw.json")
-
-# To this:
-raw_json_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mythology_raw1.json")
-```
+To expand the dataset with new languages (such as Tamil), please follow the comprehensive step-by-step guide in the [Tamil Setup Documentation](/docs/TAMIL_SETUP.md).
 
 ### Running Ingestion
 
@@ -376,7 +344,7 @@ Then:
 cd frontend
 npm install
 npm run build
-npm run start
+npm run dev
 ```
 
 If deploying the frontend separately, make sure the Cloud Run backend has:
@@ -393,45 +361,6 @@ This keeps CORS locked to the deployed frontend.
 - If Hindi shows English tags, restart the Next.js dev server to clear stale `.next` chunks, then confirm the selected language is `hi`.
 - If Tamil returns empty or English-like output, check whether the Elastic documents actually have `translations.ta.name` and `translations.ta.description`.
 - If `orchestrate` falls back to mock content, confirm `ELASTIC_URL`, `ELASTIC_API_KEY`, and the `mythology-dataset-en` index exist.
-
-## Suggested Commit Message
-
-```text
-fix: localize MCP creator output and document deployment flow
-
-- parse mcp-bridge script_segments into localized creator blocks
-- preserve generated assets to avoid duplicate raw-string hooks
-- filter translated hashtag pills by selected script
-- expose Tamil in the language selector
-- support production backend URLs via NEXT_PUBLIC_API_BASE_URL
-- refresh README with API flows, local setup, Elastic ingestion, and Cloud Run notes
-```
-
-## Recent Architecture Changes (June 2026)
-
-### Removed Hardcoded Translations
-
-**Before:** Frontend contained hardcoded Hindi translation maps (`HINDI_TERM_MAP`, `HINDI_NAME_MAP`, `HINDI_PANTHEON_MAP`) that limited scalability and mixed English templates with Hindi words.
-
-**After:** 
-- ✅ All translations now come from Elasticsearch (`translations.hi.*` and `translations.ta.*` fields)
-- ✅ New `/creator-asset` endpoint generates fully-translated hooks, narratives, and metadata in target language
-- ✅ Frontend calls backend for each identified entity → Clean native-language output (no mixing)
-- ✅ Easy to add new languages: just add translation fields to Elasticsearch documents
-
-### Backend Flow Improvements
-
-1. **Orchestrate endpoint** now instructs Gemini to extract `entity_names` from the retrieved context
-2. **Frontend receives** `entity_names` in response
-3. **Frontend loops through entities** and calls `/creator-asset` for each one
-4. **Result:** Fully-translated creator blocks with no hardcoding
-
-### Frontend Simplification
-
-- Removed: 600+ lines of translation lookup code
-- Removed: Fallback logic for missing translations
-- Added: `fetchCreatorAsset()` helper for backend translation fetching
-- Result: Cleaner, more maintainable frontend code
 
 ## Troubleshooting
 
@@ -456,23 +385,6 @@ GET mythology-dataset-en/_search
   "query": { "match": { "translations.hi.name": "शिव" } }
 }
 ```
-
-### Issue: Elasticsearch data not updated after switching to mythology_raw1.json
-
-**Solution:** Re-run ingestion script
-```bash
-cd backend
-.\.venv\Scripts\activate
-python scripts/ingest_data.py
-```
-
-The script deletes and recreates the index, so all changes take effect immediately.
-
-### Issue: Tamil queries return empty results
-
-**Solution:** Ensure `mythology_raw1.json` is actually being used
-
-See [docs/TAMIL_SETUP.md](docs/TAMIL_SETUP.md) for detailed setup instructions.
 
 ## License
 
