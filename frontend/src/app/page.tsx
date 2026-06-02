@@ -9,7 +9,7 @@ import QueryForm from "@/components/QueryForm";
 import AssetGrid from "@/components/AssetGrid";
 import { Sparkles, Compass } from "lucide-react";
 
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 
 type CreatorAsset = {
   hook: string;
@@ -19,10 +19,21 @@ type CreatorAsset = {
   sourceSnippet: string;
 };
 
+type CreatorFields = {
+  name: string;
+  pantheon: string;
+  attributes: string[];
+  description: string;
+  raw: string;
+};
+
 const LANGUAGE_SCRIPT_REGEX: Record<string, RegExp> = {
   hi: /[\u0900-\u097f]/,
   ta: /[\u0b80-\u0bff]/,
 };
+
+const RAW_FIELD_LABEL_PATTERN =
+  /\b(?:Name|Pantheon|Attributes|Description|Title|Context|Snippet|Text)\s*(?:\((?:hi|hindi|ta|tamil|en|english)\))?\s*:\s*/gi;
 
 const safeJsonParse = (value: string) => {
   try {
@@ -59,6 +70,100 @@ const isTargetLanguageText = (text: string, targetLanguage: string) => {
   return containsTargetScript(text, targetLanguage);
 };
 
+const cleanRawFieldText = (value: string) =>
+  value
+    .replace(RAW_FIELD_LABEL_PATTERN, "")
+    .replace(/\s*\|\s*/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const uniqueClean = (items: string[]) =>
+  Array.from(
+    new Set(
+      items
+        .map((item) => cleanRawFieldText(item).replace(/^#/, "").trim())
+        .filter(Boolean)
+    )
+  );
+
+const extractLabeledValue = (text: string, label: string, language?: string) => {
+  const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const languageGroup = language ? `\\((?:${language})\\)` : "(?:\\((?:hi|hindi|ta|tamil|en|english)\\))?";
+  const pattern = new RegExp(`${escapedLabel}\\s*${languageGroup}\\s*:\\s*([^|\\n\\r]+)`, "i");
+  return text.match(pattern)?.[1]?.trim() || "";
+};
+
+const extractLocalizedText = (text: string, targetLanguage: string) => {
+  const normalizedTarget = normalizeTargetLanguage(targetLanguage);
+  const languagePattern = normalizedTarget === "hi" ? "hi|hindi" : normalizedTarget === "ta" ? "ta|tamil" : "en|english";
+
+  const name =
+    extractLabeledValue(text, "Name", languagePattern) ||
+    extractLabeledValue(text, "Title", languagePattern);
+  const description =
+    extractLabeledValue(text, "Description", languagePattern) ||
+    extractLabeledValue(text, "Text", languagePattern) ||
+    extractLabeledValue(text, "Snippet", languagePattern);
+  const attributes =
+    extractLabeledValue(text, "Attributes", languagePattern) ||
+    extractLabeledValue(text, "Powers", languagePattern);
+  const pantheon = extractLabeledValue(text, "Pantheon", languagePattern);
+
+  return {
+    name: cleanRawFieldText(name),
+    pantheon: cleanRawFieldText(pantheon),
+    attributes: uniqueClean(attributes.split(/[,|]/)),
+    description: cleanRawFieldText(description),
+  };
+};
+
+const extractEnglishMetadata = (text: string) => {
+  const metadataPattern = /Name:\s*(.+?)\s*\|\s*Pantheon:\s*(.+?)\s*\|\s*Attributes:\s*(.+?)\s*\|\s*Description:\s*(.+?)(?=\s*\|\s*Name\s*\(|$)/i;
+  const match = text.match(metadataPattern);
+  if (!match) {
+    return {
+      name: cleanRawFieldText(extractLabeledValue(text, "Name")),
+      pantheon: cleanRawFieldText(extractLabeledValue(text, "Pantheon")),
+      attributes: uniqueClean(extractLabeledValue(text, "Attributes").split(/[,|]/)),
+      description: cleanRawFieldText(extractLabeledValue(text, "Description")),
+    };
+  }
+
+  const [, name, pantheon, attributes, description] = match;
+  return {
+    name: cleanRawFieldText(name),
+    pantheon: cleanRawFieldText(pantheon),
+    attributes: uniqueClean(attributes.split(/[,|]/)),
+    description: cleanRawFieldText(description),
+  };
+};
+
+const translateTokenToHindi = (token: string) => {
+  const normalized = token.toLowerCase().trim();
+  // Translation now happens on the backend
+  return "";
+};
+
+const buildHindiTags = (fields: CreatorFields) => {
+  // Translation now happens on the backend via /creator-asset endpoint
+  return uniqueClean(["पौराणिककथा", "देवकथा"]).slice(0, 12);
+};
+
+const createHindiCreatorAsset = (fields: CreatorFields): CreatorAsset => {
+  // This function is deprecated - use backend /creator-asset endpoint instead
+  const name = fields.name || "यह देवता";
+  const pantheon = fields.pantheon || "पौराणिक कथा";
+  const description = fields.description || `${name} से जुडी यह कथा रहस्य, शक्ति और गति से भरपूर है।`;
+  
+  return {
+    hook: `⚡ वायरल वीडियो हुक: ${name}`,
+    narrative: `आज की कहानी '${name}' की है। ${description}`,
+    metadataTags: buildHindiTags(fields),
+    language: "Hindi",
+    sourceSnippet: fields.raw,
+  };
+};
+
 const extractTargetLanguageLines = (text: string, targetLanguage: string) =>
   text
     .split(/\r?\n/)
@@ -80,19 +185,10 @@ const createCreatorAsset = (
     .map((item) => item.toLowerCase().replace(/[^A-Za-z0-9_\u0900-\u097f\u0b80-\u0bff]+/g, ""))
     .slice(0, 12);
 
+  // Use backend translation service for non-English languages
   const normalizedTarget = normalizeTargetLanguage(targetLanguage);
-  if (normalizedTarget !== "en") {
-    const nativeText = [name, description].filter(Boolean).join(": ");
-    return {
-      hook: description || nativeText || sourceSnippet,
-      narrative: sourceSnippet || nativeText || description,
-      metadataTags: Array.from(new Set(elementTags)),
-      language: detectLanguageHint(sourceSnippet),
-      sourceSnippet,
-    };
-  }
-
   const attributePhrase = attributes || "legendary traits";
+  
   return {
     hook: `${name} is a ${pantheon || "mythology"} icon with ${attributePhrase} - built for a fast, high-impact creator hook.`,
     narrative: `Bring ${name} to life with a dynamic voiceover: from the ${pantheon || "mythology"} heritage, through ${attributePhrase.toLowerCase()}, into a cinematic moment. ${description}`,
@@ -104,25 +200,21 @@ const createCreatorAsset = (
 
 const extractMetadataRows = (text: string, targetLanguage: string): CreatorAsset[] => {
   const normalizedTarget = normalizeTargetLanguage(targetLanguage);
-  const rows = extractTargetLanguageLines(text, targetLanguage);
-  const pattern = /Name:\s*(.+?)\s*\|\s*Pantheon:\s*(.+?)\s*\|\s*Attributes:\s*(.+?)\s*\|\s*Description:\s*(.+)/i;
-  const localizedNamePattern = /Name\s*(?:\((?:hi|hindi|ta|tamil)\))?\s*:\s*([^|]+)/i;
-  const localizedDescriptionPattern = /Description\s*(?:\((?:hi|hindi|ta|tamil)\))?\s*:\s*(.+)/i;
   const assets: CreatorAsset[] = [];
 
-  for (const row of rows) {
-    const match = row.match(pattern);
-    if (match) {
-      const [, name, pantheon, attributes, description] = match;
-      assets.push(createCreatorAsset(name, pantheon, attributes, description, row, targetLanguage));
-      continue;
+  // For non-English languages, try to extract from localized text first
+  if (normalizedTarget === "hi" || normalizedTarget === "ta") {
+    const localized = extractLocalizedText(text, normalizedTarget);
+    if (localized.name || localized.description) {
+      assets.push(createCreatorAsset(localized.name, localized.pantheon, localized.attributes.join(", "), localized.description, text, normalizedTarget));
+      return assets;
     }
+  }
 
-    const name = row.match(localizedNamePattern)?.[1]?.trim() || "";
-    const description = row.match(localizedDescriptionPattern)?.[1]?.trim() || row;
-    if (normalizedTarget !== "en" && description && isTargetLanguageText(description, targetLanguage)) {
-      assets.push(createCreatorAsset(name, "", "", description, row, targetLanguage));
-    }
+  // Otherwise extract from English metadata format
+  const english = extractEnglishMetadata(text);
+  if (english.name || english.description) {
+    assets.push(createCreatorAsset(english.name, english.pantheon, english.attributes.join(", "), english.description, text, normalizedTarget));
   }
 
   return assets;
@@ -211,6 +303,7 @@ const flattenResponse = (payload: any, targetLanguage: string): any[] => {
     if (payload.content) return flattenResponse(payload.content, targetLanguage);
     if (payload.resources) return flattenResponse(payload.resources, targetLanguage);
     if (payload.snippets) return flattenResponse(payload.snippets, targetLanguage);
+    if (payload.script_segments) return flattenResponse(payload.script_segments, targetLanguage);
     if (payload.text) return flattenResponse(payload.text, targetLanguage);
     if (payload._source) return flattenResponse(payload._source, targetLanguage);
     if (payload.raw) return flattenResponse(payload.raw, targetLanguage);
@@ -225,10 +318,17 @@ const parseCreatorAssets = (rawPayload: any, targetLanguage: string = "en"): Cre
   const normalizedTarget = normalizeTargetLanguage(targetLanguage);
   const flattened = flattenResponse(rawPayload, normalizedTarget);
   const assets: CreatorAsset[] = [];
+  const seen = new Set<string>();
 
   for (const item of flattened) {
     if (typeof item === "string") {
-      assets.push(...extractMetadataRows(item, normalizedTarget));
+      for (const asset of extractMetadataRows(item, normalizedTarget)) {
+        const key = `${asset.language}:${asset.hook}:${asset.narrative}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          assets.push(asset);
+        }
+      }
       continue;
     }
 
@@ -249,13 +349,25 @@ const parseCreatorAssets = (rawPayload: any, targetLanguage: string = "en"): Cre
       if (snippets) {
         for (const snippet of snippets) {
           if (typeof snippet === "string") {
-            assets.push(...extractMetadataRows(snippet, normalizedTarget));
+            for (const asset of extractMetadataRows(snippet, normalizedTarget)) {
+              const key = `${asset.language}:${asset.hook}:${asset.narrative}`;
+              if (!seen.has(key)) {
+                seen.add(key);
+                assets.push(asset);
+              }
+            }
           }
         }
       }
 
       if (typeof item.text === "string") {
-        assets.push(...extractMetadataRows(item.text, normalizedTarget));
+        for (const asset of extractMetadataRows(item.text, normalizedTarget)) {
+          const key = `${asset.language}:${asset.hook}:${asset.narrative}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            assets.push(asset);
+          }
+        }
       }
 
       if (item.name && item.description) {
@@ -264,16 +376,19 @@ const parseCreatorAssets = (rawPayload: any, targetLanguage: string = "en"): Cre
           continue;
         }
 
-        assets.push(
-          createCreatorAsset(
-            String(item.name),
-            String(item.pantheon || ""),
-            Array.isArray(item.attributes) ? item.attributes.join(", ") : String(item.attributes || ""),
-            String(item.description),
-            sourceText,
-            normalizedTarget
-          )
+        const asset = createCreatorAsset(
+          String(item.name),
+          String(item.pantheon || ""),
+          Array.isArray(item.attributes) ? item.attributes.join(", ") : String(item.attributes || ""),
+          String(item.description),
+          sourceText,
+          normalizedTarget
         );
+        const key = `${asset.language}:${asset.hook}:${asset.narrative}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          assets.push(asset);
+        }
       }
     }
   }
@@ -285,9 +400,48 @@ const filterSegmentsForLanguage = (segments: any[], targetLanguage: string) =>
   segments
     .flatMap((segment) => {
       if (typeof segment !== "string") return [segment];
-      return extractTargetLanguageLines(segment, targetLanguage);
+      return extractTargetLanguageLines(segment, targetLanguage).map(cleanRawFieldText).filter(Boolean);
     })
     .filter(Boolean);
+
+/**
+ * Fetch creator asset with translations from backend API
+ * Queries the Elasticsearch index for entity translations
+ */
+const fetchCreatorAsset = async (
+  entityName: string,
+  targetLanguage: string = "en",
+  platform: string = "YouTube"
+): Promise<CreatorAsset | null> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/mythology/creator-asset`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "bypass-tunnel-reminder": "true",
+      },
+      body: JSON.stringify({
+        entity_name: entityName,
+        target_language: targetLanguage,
+        creator_platform: platform,
+      }),
+    });
+
+    if (!response.ok) {
+      console.warn(`Failed to fetch creator asset for ${entityName}: ${response.status}`);
+      return null;
+    }
+
+    const result = await response.json();
+    if (result.status === "success" && result.data) {
+      return result.data as CreatorAsset;
+    }
+    return null;
+  } catch (error) {
+    console.error(`Error fetching creator asset for ${entityName}:`, error);
+    return null;
+  }
+};
 
 export default function Home() {
   const [mode, setMode] = useState<"orchestrate" | "mcp-bridge">("orchestrate");
@@ -384,14 +538,31 @@ export default function Home() {
       );
 
       const parsedAssets = parseCreatorAssets(data, language);
-      const rawSegments =
-        parsedAssets.length > 0
-          ? parsedAssets
-          : Array.isArray(data.script_segments)
-          ? filterSegmentsForLanguage(data.script_segments, language)
-          : data.assets || data.content || [];
+      let finalAssets: Array<string | CreatorAsset> = [];
 
-      setScriptSegments(parsedAssets.length > 0 ? parsedAssets : rawSegments);
+      // For non-English languages, fetch proper backend translations for identified entities
+      if (language !== "en" && Array.isArray(data.entity_names) && data.entity_names.length > 0) {
+        for (const entityName of data.entity_names) {
+          if (entityName && entityName.trim()) {
+            const translatedAsset = await fetchCreatorAsset(entityName.trim(), language, platform);
+            if (translatedAsset) {
+              finalAssets.push(translatedAsset);
+            }
+          }
+        }
+      }
+
+      // If no translations fetched from entity names, use parsed assets
+      if (finalAssets.length === 0) {
+        finalAssets =
+          parsedAssets.length > 0
+            ? parsedAssets
+            : Array.isArray(data.script_segments)
+            ? filterSegmentsForLanguage(data.script_segments, language)
+            : data.assets || data.content || [];
+      }
+
+      setScriptSegments(finalAssets);
       setSeoMetadataTags(data.seo_metadata_tags || []);
 
       const step3: LogStep = {

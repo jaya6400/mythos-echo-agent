@@ -132,9 +132,13 @@ const buildAssetBlocks = (
   fallbackTags: string[],
   targetLanguage: string
 ): AssetBlock[] => {
-  const items = scriptSegments.flatMap<string | AssetBlock>((segment) => {
+  const existingBlocks: AssetBlock[] = [];
+  const items = scriptSegments.flatMap<string>((segment) => {
     if (typeof segment === "object" && segment.hook && segment.narrative && Array.isArray(segment.metadataTags)) {
-      return isTargetLanguageText(`${segment.hook}\n${segment.narrative}`, targetLanguage) ? [segment] : [];
+      if (isTargetLanguageText(`${segment.hook}\n${segment.narrative}`, targetLanguage)) {
+        existingBlocks.push(segment);
+      }
+      return [];
     }
     const maybeRaw = segment as AssetBlock & { raw?: unknown };
     if (typeof maybeRaw === "object" && typeof maybeRaw.raw === "string") {
@@ -156,7 +160,7 @@ const buildAssetBlocks = (
     return parsed.length === 0 ? [cleaned] : parsed;
   });
 
-  return items.map((rawText) => {
+  const generatedBlocks = items.map((rawText) => {
     const text = normalizeText(rawText);
     return {
       hook: extractHook(text),
@@ -166,6 +170,8 @@ const buildAssetBlocks = (
       sourceSnippet: text,
     };
   });
+
+  return [...existingBlocks, ...generatedBlocks];
 };
 
 export default function AssetGrid({ scriptSegments, seoMetadataTags, isProcessing, targetLanguage }: AssetGridProps) {
@@ -183,9 +189,15 @@ export default function AssetGrid({ scriptSegments, seoMetadataTags, isProcessin
   );
 
   const aggregatedTags = useMemo(() => {
-    const blockTags = assetBlocks.flatMap((block) => block.metadataTags);
-    return Array.from(new Set([...blockTags, ...seoMetadataTags.map((tag) => tag.toLowerCase())])).slice(0, 20);
-  }, [assetBlocks, seoMetadataTags]);
+    const blockTags = assetBlocks
+      .flatMap((block) => block.metadataTags)
+      .map((tag) => tag.toLowerCase().replace(/^#/, ""))
+      .filter((tag) => isTargetLanguageText(tag, targetLanguage));
+    const externalTags = seoMetadataTags
+      .map((tag) => tag.toLowerCase().replace(/^#/, ""))
+      .filter((tag) => isTargetLanguageText(tag, targetLanguage));
+    return Array.from(new Set([...blockTags, ...externalTags])).slice(0, 20);
+  }, [assetBlocks, seoMetadataTags, targetLanguage]);
 
   return (
     <div className="space-y-6 flex-1 flex flex-col min-h-0">
@@ -262,7 +274,10 @@ export default function AssetGrid({ scriptSegments, seoMetadataTags, isProcessin
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  {block.metadataTags.slice(0, 8).map((tag, index) => (
+                  {block.metadataTags
+                    .filter((tag) => isTargetLanguageText(tag, targetLanguage))
+                    .slice(0, 8)
+                    .map((tag, index) => (
                     <span key={`${tag}-${index}`} className="inline-flex items-center gap-1 rounded-full border border-teal-300/15 bg-teal-400/10 px-3 py-1 text-[11px] text-teal-100">
                       <Hash className="w-3 h-3" />
                       {tag}
