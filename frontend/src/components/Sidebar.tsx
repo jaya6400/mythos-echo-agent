@@ -169,7 +169,7 @@ export default function Sidebar({ logs, isProcessing }: SidebarProps) {
                               {log.label}
                             </p>
                             <div className="mt-1 flex items-center space-x-2">
-                              <span className="text-[10px] font-medium uppercase text-emerald-300">Creator step</span>
+                              <span className="text-[10px] font-medium uppercase text-emerald-300">Story step</span>
                               <span className="text-[10px] text-blue-300">•</span>
                               <span className="text-[10px] text-blue-300">{log.time}</span>
                             </div>
@@ -206,7 +206,7 @@ export default function Sidebar({ logs, isProcessing }: SidebarProps) {
             </div>
 
             <div className="flex items-center justify-center border-t border-teal-300/15 bg-slate-950/90 p-6">
-              <span className="creator-label glowing-navbar-accent !pb-1 text-[9px]">Audience Signals Ready</span>
+              <span className="creator-label glowing-navbar-accent !pb-1 text-[9px]">Creator insights ready</span>
             </div>
           </motion.aside>
         )}
