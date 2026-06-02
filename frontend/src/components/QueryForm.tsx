@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
-import { Globe, Video, Wand2, Loader2 } from "lucide-react";
+import React, { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Check, ChevronDown, Globe, Loader2, Video, Wand2 } from "lucide-react";
 
 interface QueryFormProps {
   inputText: string;
@@ -14,6 +15,87 @@ interface QueryFormProps {
   onSubmit: (e: React.FormEvent) => void;
 }
 
+interface MotionSelectProps {
+  label: string;
+  icon: React.ReactNode;
+  value: string;
+  options: { value: string; label: string }[];
+  disabled: boolean;
+  onChange: (val: string) => void;
+}
+
+function MotionSelect({ label, icon, value, options, disabled, onChange }: MotionSelectProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const selected = options.find((option) => option.value === value) ?? options[0];
+
+  return (
+    <div className="creator-field relative">
+      <label className="creator-label flex items-center gap-1.5">
+        {icon}
+        {label}
+      </label>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setIsOpen((open) => !open)}
+        className="creator-select-button"
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+      >
+        <span>{selected.label}</span>
+        <motion.span animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+          <ChevronDown className="h-4 w-4 text-teal-200" />
+        </motion.span>
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            role="listbox"
+            initial={{ opacity: 0, y: -6, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: 0.98 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+            className="creator-select-menu"
+          >
+            {options.map((option) => {
+              const isSelected = option.value === value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  role="option"
+                  aria-selected={isSelected}
+                  className="creator-select-option"
+                  onClick={() => {
+                    onChange(option.value);
+                    setIsOpen(false);
+                  }}
+                >
+                  <AnimatePresence>
+                    {isSelected && (
+                      <motion.span
+                        layoutId={`${label}-selected-bar`}
+                        initial={{ opacity: 0, scaleY: 0.4 }}
+                        animate={{ opacity: 1, scaleY: 1 }}
+                        exit={{ opacity: 0, scaleY: 0.4 }}
+                        transition={{ duration: 0.18, ease: "easeOut" }}
+                        className="absolute left-1 top-2 bottom-2 w-1 rounded-full bg-teal-300"
+                      />
+                    )}
+                  </AnimatePresence>
+                  <span className="pl-2">{option.label}</span>
+                  {isSelected && <Check className="h-4 w-4 text-teal-200" />}
+                </button>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 export default function QueryForm({
   inputText,
   setInputText,
@@ -24,42 +106,38 @@ export default function QueryForm({
   isProcessing,
   onSubmit
 }: QueryFormProps) {
+  const languageOptions = [
+    { value: "en", label: "English creator research" },
+    { value: "hi", label: "Hindi creator research" },
+  ];
+
+  const platformOptions = [
+    { value: "YouTube", label: "YouTube video script" },
+    { value: "TikTok", label: "TikTok short form" },
+    { value: "Instagram", label: "Instagram reels story" },
+    { value: "Podcast", label: "Podcast episode outline" },
+  ];
+
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Language Select */}
-        <div className="space-y-1.5">
-          <label className="text-[11px] font-mono text-slate-400 uppercase tracking-wider flex items-center gap-1">
-            <Globe className="w-3 h-3 text-slate-500" /> Index Language
-          </label>
-          <select
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-            disabled={isProcessing}
-            className="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-xs text-slate-300 focus:ring-1 focus:ring-accent-blue/50 focus:border-accent-blue/50 transition-all"
-          >
-            <option value="en">English (mythology-dataset-en)</option>
-            <option value="hi">Hindi (mythology-dataset-hi)</option>
-          </select>
-        </div>
+        <MotionSelect
+          label="Script Layout"
+          icon={<Globe className="h-3.5 w-3.5 text-teal-200" />}
+          value={language}
+          options={languageOptions}
+          disabled={isProcessing}
+          onChange={setLanguage}
+        />
 
-        {/* Creator Platform */}
-        <div className="space-y-1.5">
-          <label className="text-[11px] font-mono text-slate-400 uppercase tracking-wider flex items-center gap-1">
-            <Video className="w-3 h-3 text-slate-500" /> Target Platform
-          </label>
-          <select
-            value={platform}
-            onChange={(e) => setPlatform(e.target.value)}
-            disabled={isProcessing}
-            className="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-xs text-slate-300 focus:ring-1 focus:ring-accent-blue/50 focus:border-accent-blue/50 transition-all"
-          >
-            <option value="YouTube">YouTube Video Script</option>
-            <option value="TikTok">TikTok Short Form</option>
-            <option value="Instagram">Instagram Reels Narrative</option>
-            <option value="Podcast">Audio Podcast Overview</option>
-          </select>
-        </div>
+        <MotionSelect
+          label="Content Platform"
+          icon={<Video className="h-3.5 w-3.5 text-teal-200" />}
+          value={platform}
+          options={platformOptions}
+          disabled={isProcessing}
+          onChange={setPlatform}
+        />
       </div>
 
       {/* Prompt Input */}
@@ -72,15 +150,17 @@ export default function QueryForm({
           disabled={isProcessing}
           required
           minLength={5}
-          className="w-full bg-slate-900/80 border border-white/15 rounded-xl py-3.5 pl-4 pr-14 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-accent-blue/50 focus:border-accent-blue/50 transition-all disabled:opacity-50"
+          className="creator-input"
         />
         <button
           type="submit"
           disabled={!inputText.trim() || isProcessing}
-          className="absolute right-2 p-2 bg-accent-blue hover:bg-blue-600 disabled:bg-slate-800 disabled:text-slate-600 text-white rounded-lg transition-colors flex items-center justify-center shadow-md"
+          className="creator-submit"
         >
           {isProcessing ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
+            <motion.span animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>
+              <Loader2 className="w-4 h-4" />
+            </motion.span>
           ) : (
             <Wand2 className="w-4 h-4" />
           )}

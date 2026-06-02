@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useEffect } from "react";
+import { motion } from "framer-motion";
 import { Tag, FileText } from "lucide-react";
 
 interface AssetGridProps {
@@ -22,22 +23,25 @@ export default function AssetGrid({ scriptSegments, seoMetadataTags, isProcessin
     <div className="space-y-6 flex-1 flex flex-col min-h-0">
       {/* Tags */}
       <div className="space-y-2">
-        <div className="flex items-center space-x-1.5 text-[11px] font-mono text-slate-400 uppercase tracking-wider">
-          <Tag className="w-3 h-3 text-slate-500" />
-          <span>SEO Metadata Tags</span>
+        <div className="creator-label flex items-center space-x-1.5">
+          <Tag className="w-3 h-3 text-teal-200" />
+          <span>SEO Optimization Tags</span>
         </div>
-        <div className="flex flex-wrap gap-1.5 min-h-[32px] p-2 bg-slate-900/30 border border-white/5 rounded-lg">
+        <div className="flex flex-wrap gap-1.5 min-h-[32px] p-2 bg-slate-950/70 border border-teal-300/15 rounded-lg">
           {seoMetadataTags.length > 0 ? (
             seoMetadataTags.map((tag, idx) => (
-              <span
+              <motion.span
                 key={idx}
-                className="px-2.5 py-1 bg-accent-blue/10 border border-accent-blue/20 text-accent-blue text-xs rounded-full font-medium animate-fade-in"
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.22, ease: "easeOut" }}
+                className="px-2.5 py-1 bg-teal-400/10 border border-teal-300/25 text-teal-200 text-xs rounded-full font-medium"
               >
                 #{tag}
-              </span>
+              </motion.span>
             ))
           ) : (
-            <span className="text-xs text-slate-500 italic px-1">
+            <span className="empty-state-text px-1 text-xs">
               {isProcessing ? "Generating tags..." : "No keywords synthesized yet."}
             </span>
           )}
@@ -46,42 +50,50 @@ export default function AssetGrid({ scriptSegments, seoMetadataTags, isProcessin
 
       {/* Script Window */}
       <div className="flex-1 flex flex-col space-y-2 min-h-[300px]">
-        <div className="flex items-center space-x-1.5 text-[11px] font-mono text-slate-400 uppercase tracking-wider">
-          <FileText className="w-3 h-3 text-slate-500" />
-          <span>Generated Script Chapters</span>
+        <div className="creator-label flex items-center space-x-1.5">
+          <FileText className="w-3 h-3 text-teal-200" />
+          <span>Generated Production Elements</span>
         </div>
         
-        <div className="flex-1 min-h-[250px] bg-slate-900/40 border border-white/10 rounded-xl p-4 overflow-y-auto space-y-4 shadow-inner">
+        <div className="flex-1 min-h-[250px] bg-slate-950/70 border border-teal-300/20 rounded-xl p-4 overflow-y-auto space-y-4 shadow-inner">
           {isProcessing && scriptSegments.length === 0 ? (
-            <div className="space-y-4 animate-pulse">
+            <div className="space-y-4">
               {[1, 2, 3].map((n) => (
-                <div key={n} className="p-4 bg-white/[0.02] border border-white/5 rounded-lg space-y-2">
-                  <div className="h-3.5 bg-slate-800 rounded w-24" />
-                  <div className="h-3 bg-slate-800 rounded w-full" />
-                </div>
+                <motion.div
+                  key={n}
+                  className="p-4 bg-cyan-950/35 border border-teal-300/10 rounded-lg space-y-2"
+                  animate={{ opacity: [0.45, 1, 0.45] }}
+                  transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut", delay: n * 0.08 }}
+                >
+                  <div className="h-3.5 bg-teal-300/20 rounded w-24" />
+                  <div className="h-3 bg-blue-300/20 rounded w-full" />
+                </motion.div>
               ))}
             </div>
           ) : scriptSegments.length > 0 ? (
             scriptSegments.map((segment, idx) => (
-              <div
+              <motion.div
                 key={idx}
-                className="p-4 bg-slate-950/50 border border-white/5 hover:border-white/10 rounded-lg transition-all animate-fade-in"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.28, ease: "easeOut" }}
+                className="p-4 bg-slate-950/70 border border-teal-300/15 hover:border-teal-300/35 rounded-lg transition-colors"
               >
-                <div className="text-[10px] font-mono text-accent-blue uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                <div className="text-[10px] font-semibold text-blue-300 uppercase tracking-wider mb-1.5 flex items-center justify-between">
                   <span>Segment {idx + 1}</span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-accent-blue" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-teal-300" />
                 </div>
-                <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap select-text">
+                <p className="text-sm text-slate-100 leading-relaxed whitespace-pre-wrap select-text">
                   {segment}
                 </p>
-              </div>
+              </motion.div>
             ))
           ) : (
-            <div className="h-full flex flex-col items-center justify-center py-12 text-slate-500 text-center">
-              <div className="p-3 bg-white/5 rounded-full border border-white/10 text-slate-600 mb-3">
+            <div className="h-full flex flex-col items-center justify-center py-12 text-center">
+              <div className="p-3 bg-teal-300/10 rounded-full border border-teal-300/20 text-teal-200 mb-3">
                 <FileText className="w-7 h-7" />
               </div>
-              <p className="text-sm font-medium text-slate-400">Script viewer empty</p>
+              <p className="empty-state-text">Script viewer empty</p>
             </div>
           )}
           <div ref={scriptEndRef} />

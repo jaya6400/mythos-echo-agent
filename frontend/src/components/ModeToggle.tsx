@@ -11,12 +11,12 @@ interface ModeToggleProps {
 
 export default function ModeToggle({ mode, setMode, disabled }: ModeToggleProps) {
   const modes = [
-    { id: "orchestrate", label: "Orchestrate", icon: Zap },
-    { id: "mcp-bridge", label: "MCP Bridge", icon: Globe2 },
+    { id: "orchestrate", label: "Creator Flow", icon: Zap },
+    { id: "mcp-bridge", label: "Research Boost", icon: Globe2 },
   ] as const;
 
   return (
-    <div className="flex p-1 bg-slate-900/80 border border-white/10 rounded-xl w-fit">
+    <div className="flex p-1 bg-slate-950/80 border border-teal-300/20 rounded-xl w-fit">
       {modes.map((m) => {
         const Icon = m.icon;
         const isActive = mode === m.id;
@@ -27,8 +27,8 @@ export default function ModeToggle({ mode, setMode, disabled }: ModeToggleProps)
             onClick={() => setMode(m.id)}
             className={`flex items-center space-x-2 px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${
               isActive 
-                ? "bg-accent-blue text-white shadow-lg shadow-accent-blue/20" 
-                : "text-slate-400 hover:text-slate-200 hover:bg-white/5"
+                ? "bg-teal-400 text-slate-950 shadow-lg shadow-teal-400/20" 
+                : "text-blue-200 hover:text-white hover:bg-teal-400/10"
             } disabled:opacity-50`}
           >
             <Icon className="w-3.5 h-3.5" />

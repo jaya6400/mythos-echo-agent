@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
+import { motion } from "framer-motion";
 import { LogStep } from "@/components/Sidebar";
 import DashboardContainer from "@/components/DashboardContainer";
 import ModeToggle from "@/components/ModeToggle";
 import QueryForm from "@/components/QueryForm";
 import AssetGrid from "@/components/AssetGrid";
-import { Sparkles, RefreshCcw, Compass } from "lucide-react";
+import { Sparkles, Compass } from "lucide-react";
 
 // Update this to your localtunnel URL when testing publicly
 // e.g., "https://poor-horses-own.loca.lt"
@@ -14,7 +15,7 @@ const API_BASE_URL = "http://localhost:8000";
 
 export default function Home() {
   // State
-  const [mode, setMode] = useState<"orchestrate" | "mcp-bridge">("orchestrate");
+  const [mode, setMode] = useState<"orchestrate" | "mcp-bridge">("orchestrate"); // Internally same, UI changed
   const [inputText, setInputText] = useState("");
   const [language, setLanguage] = useState("en");
   const [platform, setPlatform] = useState("YouTube");
@@ -31,15 +32,6 @@ export default function Home() {
     setPlatform(plat);
   };
 
-  const handleReset = () => {
-    setInputText("");
-    setLanguage("en");
-    setPlatform("YouTube");
-    setScriptSegments([]);
-    setSeoMetadataTags([]);
-    setLogs([]);
-  };
-
   const handleOrchestrate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim() || isProcessing) return;
@@ -51,10 +43,10 @@ export default function Home() {
     const step1: LogStep = {
       id: "step-1",
       status: "running",
-      label: `1. Initializing ${mode === 'orchestrate' ? 'Orchestration' : 'MCP Bridge'}...`,
+      label: "Preparing creator brief...",
       time: getLogTime(),
       category: "reasoning",
-      details: `Targeting Endpoint: /${mode}\nPayload: ${inputText}`
+      details: "Choosing the best story shape for this format."
     };
     setLogs([step1]);
 
@@ -64,10 +56,10 @@ export default function Home() {
     const step2: LogStep = {
       id: "step-2",
       status: "running",
-      label: "2. Invoking Backend Pipeline...",
+      label: "Drafting your script...",
       time: getLogTime(),
       category: "gateway",
-      details: `POST ${API_BASE_URL}/api/v1/mythology/${mode}`
+      details: "Building a clear hook, pace, and scene flow for creators."
     };
     setLogs(prev => [...prev, step2]);
 
@@ -109,7 +101,7 @@ export default function Home() {
       setLogs(prev => prev.map(l => l.id === "step-2" ? { 
         ...l, 
         status: "success", 
-        details: "API Handshake Successful." 
+        details: "Useful story context found and shaped for the selected platform." 
       } : l));
 
       // Enhanced Robust Data Parser to handle pipeline results, MCP content blocks, and raw Elastic hits
@@ -155,10 +147,10 @@ export default function Home() {
       const step3: LogStep = {
         id: "step-3",
         status: "success",
-        label: "3. Synthesis Complete",
+        label: "Ready to refine",
         time: getLogTime(),
         category: "analysis",
-        details: `Parsed ${formattedSegments.length} segments.`
+        details: "Review the script beats, tags, and production notes."
       };
       setLogs(prev => [...prev, step3]);
     } catch (error: any) {
@@ -180,34 +172,35 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col p-4 md:p-6 lg:p-8 max-w-7xl mx-auto justify-center">
-      <div className="w-full flex-1 flex flex-col justify-center space-y-6">
-        {/* Top Header Controls */}
-        <div className="flex items-center justify-between text-center md:text-left">
-          <ModeToggle mode={mode} setMode={setMode} disabled={isProcessing} />
-          
-          <button 
-            onClick={handleReset}
-            className="flex items-center space-x-1.5 px-3 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors text-xs text-slate-400 hover:text-slate-200"
-          >
-            <RefreshCcw className="w-3.5 h-3.5" />
-            <span>Reset</span>
-          </button>
-        </div>
+    <main className="studio-container selection:bg-teal-500/30">
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="studio-shell"
+      >
+        {/* Simplified Controls */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, ease: "easeOut", delay: 0.08 }}
+          className="flex items-center justify-between text-center md:text-left"
+        >
+          <div className="flex items-center space-x-6">
+            <h2 className="glowing-navbar-accent creator-label !mb-0 !text-sm">Content Generation Pipeline</h2>
+            <ModeToggle mode={mode} setMode={setMode} disabled={isProcessing} />
+          </div>
+        </motion.div>
 
-        <DashboardContainer logs={logs} isProcessing={isProcessing}>
-          {/* Page Header */}
-          <div className="flex items-center space-x-3 pb-4 border-b border-white/5">
-            <div className="p-2.5 bg-gradient-to-tr from-accent-purple/20 to-accent-blue/20 rounded-xl border border-accent-purple/30">
-              <Sparkles className="w-6 h-6 text-accent-purple" />
-            </div>
-            <div>
-              <h1 className="font-bold text-lg tracking-wide text-slate-100 flex items-center gap-1.5 animate-fade-in">
-                Mythos Echo Dashboard 
-                <span className="text-[10px] text-accent-blue bg-accent-blue/10 border border-accent-blue/20 px-2 py-0.5 rounded font-mono font-normal">v1.1.0</span>
-              </h1>
-              <p className="text-xs text-slate-400">Component-driven content planning workspace</p>
-            </div>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut", delay: 0.14 }}
+        >
+          <DashboardContainer logs={logs} isProcessing={isProcessing}>
+          <div className="studio-header">
+            <Sparkles className="w-6 h-6 text-teal-400" />
+            <h1 className="font-bold text-xl tracking-wide text-slate-100 uppercase">Video Script Generator</h1>
           </div>
 
           <QueryForm 
@@ -219,29 +212,34 @@ export default function Home() {
 
           {/* Suggestions */}
           {scriptSegments.length === 0 && !isProcessing && (
-            <div className="space-y-2.5 animate-fade-in">
-              <p className="text-[11px] font-mono text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                <Compass className="w-3.5 h-3.5" /> Sample Prompts
+            <motion.div
+              className="space-y-2.5"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.32, ease: "easeOut" }}
+            >
+              <p className="creator-label flex items-center gap-1.5 !text-teal-400">
+                <Compass className="w-3.5 h-3.5" /> Creator Workspace Inspiration
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => handleSuggestionClick("Explain the power of Thor's hammer Mjolnir", "en", "YouTube")}
-                  className="p-3 bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 rounded-lg text-left text-xs text-slate-300 transition-all"
+                  className="media-card p-6 text-left group"
                 >
-                  <span className="font-semibold text-accent-purple block mb-0.5">Norse Mythology</span>
-                  <span className="text-slate-400">Explain the power of Thor's hammer Mjolnir (EN, YT)</span>
+                  <span className="media-card__hook block mb-2 group-hover:translate-x-1 transition-transform">Norse Mythology</span>
+                  <span className="text-blue-200">Explain the power of Thor's hammer Mjolnir for YouTube.</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleSuggestionClick("Detail Vayu wind speed attributes", "en", "TikTok")}
-                  className="p-3 bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 rounded-lg text-left text-xs text-slate-300 transition-all"
+                  className="media-card p-6 text-left group"
                 >
-                  <span className="font-semibold text-accent-amber block mb-0.5">Hindu Mythology</span>
-                  <span className="text-slate-400">Detail Vayu wind speed attributes (EN, TikTok)</span>
+                  <span className="media-card__hook !text-amber-400 block mb-2 group-hover:translate-x-1 transition-transform">Hindu Mythology</span>
+                  <span className="text-blue-200">Detail Vayu wind speed attributes for a TikTok story.</span>
                 </button>
               </div>
-            </div>
+            </motion.div>
           )}
           
           <AssetGrid 
@@ -249,8 +247,9 @@ export default function Home() {
             seoMetadataTags={seoMetadataTags} 
             isProcessing={isProcessing} 
           />
-        </DashboardContainer>
-      </div>
+          </DashboardContainer>
+        </motion.div>
+      </motion.div>
     </main>
   );
 }
