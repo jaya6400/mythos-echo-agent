@@ -15,26 +15,38 @@ class ContentPlanOutput(BaseModel):
 
 async def run_orchestration_pipeline(payload_dict: dict) -> dict:
     try:
-        user_query = payload_dict.get("query", "")
-        lang_target = payload_dict.get("lang", "en")
-        platform_target = payload_dict.get("platform", "YouTube")
+        # Handle keys from both the frontend UI and potential Agent Studio calls
+        user_query = payload_dict.get("user_prompt", payload_dict.get("query", ""))
+        lang_target = payload_dict.get("language", payload_dict.get("lang", "en"))
+        platform_target = payload_dict.get("creator_platform", payload_dict.get("platform", "YouTube"))
         
         # 1. Gather historical folklore context (Falls back safely if index is missing)
-        logger.info(f"Starting orchestration pipeline for: '{user_query}'")
+        logger.info(f"Starting orchestration pipeline for: '{user_query}' [Target Lang: {lang_target}]")
         context_documents = await query_elastic_mcp_context(query=user_query, lang=lang_target)
         
         # 2. Fire unified client worker 
         client = genai.Client()
+
+        language_names = {
+            "en": "English",
+            "hi": "Hindi in Devanagari script",
+            "ta": "Tamil script",
+        }
+        language_instruction = language_names.get(str(lang_target).lower(), str(lang_target))
+        exclusivity_instruction = ""
+        if str(lang_target).lower() in {"hi", "ta"}:
+            exclusivity_instruction = " Do not include English source rows, English labels, or bilingual output unless the user explicitly asks for comparison."
         
         system_instruction = (
-            "You are an expert cultural content strategist dashboard. "
-            "Use the provided folklore context data to plan script assets."
+            f"You are an expert cultural content strategist dashboard. "
+            f"Use the provided folklore context data to plan script assets in {language_instruction}. "
+            f"IMPORTANT: The fields 'thought_process_step' and 'script_segments' MUST be written in {language_instruction}.{exclusivity_instruction}"
         )
         
         user_content = (
             f"Platform Target: {platform_target}\n"
             f"Prompt Query: {user_query}\n\n"
-            f"Retrieved Elastic Context:\n{json.dumps(context_documents)}"
+            f"Retrieved Elastic Context:\n{json.dumps(context_documents, ensure_ascii=False)}"
         )
         
         logger.info(f"Invoking Gemini model (3.5-flash) for {platform_target} synthesis...")
