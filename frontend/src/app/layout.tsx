@@ -5,6 +5,11 @@ import LayoutShell from "@/components/LayoutShell";
 export const metadata: Metadata = {
   title: "Mythos Echo Agent - Dashboard",
   description: "Multilingual mythology indexer and creator workspace powered by Gemini and Elastic MCP Gateway",
+  icons: {
+    icon: "/icon.jpeg", 
+    shortcut: "/icon.jpeg",
+    apple: "/icon.jpeg",
+  },
 };
 
 export default function RootLayout({
