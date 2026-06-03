@@ -35,10 +35,10 @@ Project execution tracking framework for the Google Cloud Agent Builder Hackatho
 - [ ] Re-seed the backup schema files and operational documents into the new production cluster.
 
 ## 🟦 Phase 5: Containerized Cloud Deployment (SCHEDULED)
-- [ ] Write a production-ready, multi-stage `Dockerfile` inside the `backend/` workspace.
-- [ ] Push the localized backend image to the Google Cloud Artifact Registry using the Google Cloud CLI (`gcloud builds`).
-- [ ] Deploy the application to a managed **Google Cloud Run** container instance to secure a persistent public URL.
-- [ ] Connect the Next.js production client endpoints directly to the newly hosted Cloud Run URL.
+- [x] Write a production-ready, multi-stage `Dockerfile` inside the `backend/` workspace.
+- [x] Push the localized backend image to the Google Cloud Artifact Registry using the Google Cloud CLI (`gcloud builds`).
+- [x] Deploy the application to a managed **Google Cloud Run** container instance to secure a persistent public URL.
+- [x] Connect the Next.js production client endpoints directly to the newly hosted Cloud Run URL.
 
 ## 🟦 Phase 6: Submission Assets & Documentation (SCHEDULED)
 - [ ] Compile a comprehensive, presentation-ready project `README.md` file featuring an architectural ASCII flowchart.
