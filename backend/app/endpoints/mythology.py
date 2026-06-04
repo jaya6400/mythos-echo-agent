@@ -296,7 +296,7 @@ async def mcp_bridge(request: Request):
 async def get_creator_asset(payload: CreatorAssetRequest):
     """
     Fetch creator asset with multilingual translations from Elasticsearch index.
-    Uses translations.hi.* and translations.ta.* fields for non-English content.
+    Uses query_elastic_mcp_context() to fetch real translations from translations.hi and translations.ta.
     Generates creator hooks and narratives based on fetched translations.
     """
     try:
@@ -305,53 +305,30 @@ async def get_creator_asset(payload: CreatorAssetRequest):
         
         logger.info(f"Fetching creator asset for: {entity_name} (lang={target_language})")
         
-        # Query Elasticsearch for the entity
-        index_target = "mythology-dataset-en"
+        # Query Elasticsearch using elastic MCP context function to get real translations
+        elastic_results = await query_elastic_mcp_context(query=entity_name, lang=target_language)
         
-        # Check if index exists
-        if not await es_client.indices.exists(index=index_target):
-            logger.warning(f"Elasticsearch index '{index_target}' not found.")
-            raise HTTPException(status_code=404, detail=f"Index '{index_target}' not found")
-        
-        # Build translation-aware query
-        if target_language == "hi":
-            search_fields = ["translations.hi.name^2", "translations.hi.description", "name"]
-        elif target_language == "ta":
-            search_fields = ["translations.ta.name^2", "translations.ta.description", "name"]
-        else:
-            search_fields = ["name^2", "description"]
-        
-        query_body = {
-            "query": {
-                "multi_match": {
-                    "query": entity_name,
-                    "fields": search_fields,
-                    "type": "most_fields",
-                    "fuzziness": "AUTO"
-                }
-            },
-            "size": 1
-        }
-        
-        response = await es_client.search(index=index_target, body=query_body)
-        hits = response.get("hits", {}).get("hits", [])
-        
-        if not hits:
+        if not elastic_results:
             logger.warning(f"No entity found for: {entity_name}")
             raise HTTPException(status_code=404, detail=f"Entity '{entity_name}' not found")
         
-        source = hits[0].get("_source", {})
+        # Use the first result as the primary source
+        source = elastic_results[0]
         
-        # Extract translations based on target language
+        # Extract base English fields
         name = source.get("name", "")
         description = source.get("description", "")
         pantheon = source.get("pantheon", "")
         attributes = source.get("attributes", [])
+        source_snippet = source.get("normalized_content", source.get("context_source", ""))
         
+        # Extract translated fields based on target language
         if target_language == "hi":
-            # Use Hindi translations if available
-            name = source.get("translations.hi.name") or source.get("translations", {}).get("hi", {}).get("name") or name
-            description = source.get("translations.hi.description") or source.get("translations", {}).get("hi", {}).get("description") or description
+            # Get Hindi translations from the nested structure
+            translations_hi = source.get("translations", {}).get("hi", {})
+            name = translations_hi.get("name", name)
+            description = translations_hi.get("description", description)
+            # Map pantheon to Hindi if available, otherwise use source value
             pantheon_hi_map = {
                 "hindu": "हिंदू पौराणिक कथा",
                 "greek": "यूनानी पौराणिक कथा",
@@ -361,9 +338,11 @@ async def get_creator_asset(payload: CreatorAssetRequest):
             pantheon = pantheon_hi_map.get(pantheon.lower(), pantheon)
             
         elif target_language == "ta":
-            # Use Tamil translations if available
-            name = source.get("translations.ta.name") or source.get("translations", {}).get("ta", {}).get("name") or name
-            description = source.get("translations.ta.description") or source.get("translations", {}).get("ta", {}).get("description") or description
+            # Get Tamil translations from the nested structure
+            translations_ta = source.get("translations", {}).get("ta", {})
+            name = translations_ta.get("name", name)
+            description = translations_ta.get("description", description)
+            # Map pantheon to Tamil if available, otherwise use source value
             pantheon_ta_map = {
                 "hindu": "இந்து புராணக்கதை",
                 "greek": "கிரேக்க புராணக்கதை",
@@ -372,24 +351,24 @@ async def get_creator_asset(payload: CreatorAssetRequest):
             }
             pantheon = pantheon_ta_map.get(pantheon.lower(), pantheon)
         
-        # Generate creator asset based on language
+        # Generate creator asset using real translations from Elasticsearch
         creator_asset = generate_creator_asset(
             name=name,
             pantheon=pantheon,
             attributes=attributes if isinstance(attributes, list) else [],
             description=description,
-            source_snippet=source.get("normalized_content", ""),
+            source_snippet=source_snippet,
             target_language=target_language,
             platform=payload.creator_platform
         )
         
-        logger.info(f"Successfully generated creator asset for: {name}")
+        logger.info(f"Successfully generated creator asset for: {name} (lang={target_language})")
         
         return {
             "status": "success",
             "data": creator_asset,
             "source_entity": {
-                "id": hits[0].get("_id"),
+                "id": source.get("_id", ""),
                 "name": name,
                 "pantheon": pantheon,
                 "attributes": attributes
