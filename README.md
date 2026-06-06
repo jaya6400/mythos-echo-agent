@@ -186,4 +186,12 @@ This keeps CORS locked to the deployed frontend.
 
 ---
 
+## 🔮 Future Enhancements
+* **Unified Creator Identity Profiles**: Implement multi-tenant authentication allowing content creators to securely link their personal YouTube, TikTok, and Instagram accounts directly to the workspace dashboard.
+* **Direct-to-Platform Video Publishing**: Integrate official platform API webhooks to allow one-click scheduling and direct draft uploading of finalized asset packages into social streams, completely eliminating local download loops.
+* **Automated Timeline Segment Slicing**: Expand the generation engine to break down comprehensive multi-lingual historical records into short-form video segments, aligning specific scripts with exact cinematic clip timestamp boundaries.
+* **Native AI Video Synthesis Assembly**: Interface the backend directly with external cloud video generation models to automatically compile generated background footage, matching the tone of the synthesized mythology narratives.
+
+---
+
 License: MIT — see [LICENSE](LICENSE)

@@ -132,11 +132,11 @@ export const createCreatorAsset = (
     .map((item) => item.toLowerCase().replace(/[^A-Za-z0-9_\u0900-\u097f\u0b80-\u0bff]+/g, ""))
     .slice(0, 12);
 
-  const attributePhrase = attributes || "legendary traits";
+  const summary = description || [name, pantheon, attributes].filter(Boolean).join(" ");
   
   return {
-    hook: `${name} is a ${pantheon || "mythology"} icon with ${attributePhrase} - built for a fast, high-impact creator hook.`,
-    narrative: `Bring ${name} to life with a dynamic voiceover: from the ${pantheon || "mythology"} heritage, through ${attributePhrase.toLowerCase()}, into a cinematic moment. ${description}`,
+    hook: summary.slice(0, 180),
+    narrative: summary,
     metadataTags: Array.from(new Set(elementTags)),
     language: detectLanguageHint(sourceSnippet),
     sourceSnippet,
