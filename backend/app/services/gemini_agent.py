@@ -4,6 +4,7 @@ from google import genai
 from google.genai import types
 from pydantic import BaseModel
 from services.elastic_mcp import query_elastic_mcp_context
+from utils.ai_defense import is_gemini_transient_error
  
 logger = logging.getLogger("uvicorn.error")
 logger.setLevel(logging.INFO)
@@ -69,8 +70,15 @@ async def run_orchestration_pipeline(payload_dict: dict) -> dict:
         
     except Exception as e:
         logger.error(f"Orchestration pipeline failed: {str(e)}")
+        if is_gemini_transient_error(e):
+            raise
         return {
-            "thought_process_step": f"Pipeline exception details: {str(e)}",
-            "script_segments": [],
-            "seo_metadata_tags": ["error"]
+            "thought_process_step": "High-availability mode: live synthesis is temporarily unavailable, so MythosEcho is serving a stable baseline content plan.",
+            "script_segments": [
+                "Introduce the myth with a clear character, place, or symbol.",
+                "Explain the cultural meaning using simple, creator-ready language.",
+                "End with a modern takeaway that invites the audience to keep watching."
+            ],
+            "seo_metadata_tags": ["mythology", "folklore", "mythosecho"],
+            "entity_names": []
         }
