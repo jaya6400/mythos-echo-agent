@@ -8,8 +8,8 @@ Quick, reliable, and language-aware, currently production-ready for English, Hin
 
 ## Quick Links
 
-- Deployed Website: https://mythos-echo-agent-jd.vercel.app/
-- Demo Video: https://example.com/demo-video
+- Deployed Website: [CLICK HERE](https://mythos-echo-agent-jd.vercel.app/)
+- Demo Video: [WATCH HERE](https://youtu.be/ceEnvTGIt8A)
 
 ![Architecture Diagram](docs/diagram.jpeg)
 
