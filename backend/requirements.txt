@@ -24,7 +24,7 @@ httpx==0.28.1
 idna==3.16
 multidict==6.7.1
 propcache==0.5.2
-pyasn1==0.6.3
+pyasn1==0.6.4
 pyasn1_modules==0.4.2
 pycparser==3.0
 pydantic==2.13.4
